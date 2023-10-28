@@ -6,6 +6,7 @@
 #include "sql.h"
 #include <QMessageBox>
 #include <QSettings>
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -32,14 +33,18 @@ private slots:
     void on_tabWidget_currentChanged(int index);
 
     void on_pushButton_delete_clicked();
-
-
-
     void on_pushButton_clicked();
 
     void on_pushButton_news_clicked();
 
+
+    void on_treeView_customContextMenuRequested(const QPoint &pos);
+
 private:
     Ui::MainWindow *ui;
+    bool flag = true;
+
+    // QWidget interface
+
 };
 #endif // MAINWINDOW_H

@@ -1,4 +1,4 @@
-QT       += core gui sql
+QT       += core gui sql httpserver concurrent
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -10,12 +10,14 @@ CONFIG += c++17
 
 SOURCES += \
     book.cpp \
+    httpserver.cpp \
     main.cpp \
     mainwindow.cpp \
     sql.cpp
 
 HEADERS += \
     book.h \
+    httpserver.h \
     mainwindow.h \
     singleton.h \
     sql.h

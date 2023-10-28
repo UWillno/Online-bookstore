@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+        <file>NotoSansSC-Bold.otf</file>
+        <file>NotoSansSC-Regular.otf</file>
+        <file>SIMYOU.TTF</file>
+    </qresource>
+</RCC>

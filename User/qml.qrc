@@ -1,0 +1,10 @@
+<RCC>
+    <qresource prefix="/">
+        <file>NotoSansSC-Bold.otf</file>
+        <file>NotoSansSC-Regular.otf</file>
+        <file>CMakeLists.txt</file>
+        <file>ybook.png</file>
+        <file>qbook.png</file>
+        <file>jbook.png</file>
+    </qresource>
+</RCC>

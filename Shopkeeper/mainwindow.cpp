@@ -1,6 +1,11 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include <QContextMenuEvent>
+#include <QMenu>
+#include <QCursor>
+#include <QInputDialog>
+#include <QModelIndex>
 #define SQL Singleton<Sql>::GetInstance()
 
 MainWindow::MainWindow(QWidget *parent)
@@ -11,11 +16,12 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     settings = new QSettings("bookstore.ini",QSettings::IniFormat,this);
     ui->textEdit_storeProfile->setHtml(settings->value("profile").toString());
-
+    SQL.storeProfile = settings->value("profile").toString();
     ui->tableView_books->setModel(SQL.booksModel);
     ui->tableView_stock->setModel(SQL.booksModel);
     ui->tableView_account->setModel(SQL.accoutModel);
     ui->tableView_user->setModel(SQL.userModel);
+    ui->treeView->setModel(SQL.commentTreeModel);
 //    QObject::connect(&SQL,&Sql::selectAllBooksFinished,this,[&]{
 //        ui->tableView_books->setModel(SQL.booksModel);
 //        ui->tableView_stock->setModel(SQL.booksModel);
@@ -75,6 +81,16 @@ MainWindow::MainWindow(QWidget *parent)
         }
     });
 
+    QObject::connect(&SQL,&Sql::insertCommentSucceed,this,[&]{
+        showInfoDialog("回复留言成功！");
+        SQL.selectAllcomments();
+    });
+    QObject::connect(&SQL,&Sql::insertCommentFailed,this,[&]{
+         showInfoDialog("回复留言失败！");
+    });
+    SQL.selectAllcomments();
+
+
 }
 
 MainWindow::~MainWindow()
@@ -133,6 +149,8 @@ void MainWindow::on_tabWidget_currentChanged(int index)
         SQL.selectAllBooks();
   }else if(index == 3 )
         SQL.selectAllUsers();
+  else if(index == 0) SQL.selectAllcomments();
+
 }
 
 
@@ -154,6 +172,7 @@ void MainWindow::on_pushButton_delete_clicked()
 void MainWindow::on_pushButton_clicked()
 {
   settings->setValue("profile",ui->textEdit_storeProfile->toHtml());
+  SQL.storeProfile = ui->textEdit_storeProfile->toHtml();
   showInfoDialog("书店简介修改成功！");
 }
 
@@ -162,4 +181,62 @@ void MainWindow::on_pushButton_news_clicked()
 {
   SQL.postNews(ui->textEdit_news->toHtml());
 }
+
+
+
+
+void MainWindow::on_treeView_customContextMenuRequested(const QPoint &pos)
+{
+  QModelIndex index = ui->treeView->indexAt(pos);
+//  qInfo()<<index;
+   QMenu contextMenu(ui->treeView);
+  if(index.isValid()){
+
+        QAction *action1 = contextMenu.addAction("回复");
+        QAction *action2 = contextMenu.addAction("修改");
+        QAction *action3= contextMenu.addAction("删除");
+        QVariantList data = ui->treeView->model()->data(index,Qt::UserRole).value<QVariantList>();
+        connect(action1,&QAction::triggered,this,[&]{
+//      qint32 parentId =
+            qint32 row = data[1].toModelIndex().row();
+            qint32 replyId = SQL.commentModel->index(row,4).data().toInt();
+            QString content = QInputDialog::getText(this,"回复","请输入");
+            if(replyId == 0){
+                qint32 id = SQL.commentModel->index(row,0).data().toInt();
+                SQL.insertComment(id,content);
+            }else{
+              SQL.insertComment(replyId,content);
+            }
+            });
+        connect(action2,&QAction::triggered,this,[&]{
+                      QString newContent = QInputDialog::getText(this,"修改留言","请输入",QLineEdit::Normal,data.at(0).toString());
+                        if(!newContent.isEmpty()){
+                           SQL.commentModel->setData(data[1].toModelIndex(),newContent);
+                            if(SQL.commentModel->submit()){
+                               showInfoDialog("修改成功！");
+                               SQL.selectAllcomments();
+                        }else
+                            showInfoDialog("修改失败");
+                        }
+
+ });
+        connect(action3,&QAction::triggered,this,[&]{
+             SQL.commentModel->removeRow(data[1].toModelIndex().row());
+            if(SQL.commentModel->submit()){
+                            showInfoDialog("删除成功！");
+                SQL.selectAllcomments();}
+            else
+                showInfoDialog("删除失败");
+        });
+
+  }else{
+        QAction *action4= contextMenu.addAction("全部展开");
+        QAction *action5= contextMenu.addAction("全部收缩");
+        connect(action4,&QAction::triggered,ui->treeView,&QTreeView::expandAll);
+        connect(action5,&QAction::triggered,ui->treeView,&QTreeView::collapseAll);
+
+  }
+  contextMenu.exec(QCursor::pos());
+}
+
 
