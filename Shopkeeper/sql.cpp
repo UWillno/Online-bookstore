@@ -192,6 +192,7 @@ bool Sql::changeUserPassword(const qint64 &id, const QString &newPassword,const 
     query.bindValue(":newPassword",newPassword);
     query.bindValue(":oldPassword",oldPassword);
     query.exec();
+    qDebug() << query.numRowsAffected();
     return query.numRowsAffected()!=0;
 }
 

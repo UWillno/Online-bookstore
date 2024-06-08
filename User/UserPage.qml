@@ -160,7 +160,7 @@ Page {
 
     function changePassword(oldPassword,newPassword){
         const xhr = new XMLHttpRequest()
-        xhr.open("POST", httpServer+"/changPassword")
+        xhr.open("POST", httpServer+"/changePassword")
         var obj = {
             "id":ss.id,
             "oldPassword":Script.hex_md5(oldPassword),
